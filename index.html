@@ -1,512 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tobi's Money Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-<style>
-:root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface2: #181818;
-  --border: #222222;
-  --border2: #2e2e2e;
-  --text: #f0ede8;
-  --muted: #888880;
-  --hint: #3a3a38;
-  --green: #1fcc8a;
-  --red: #e05c3a;
-  --blue: #4a9eff;
-  --amber: #f0a83a;
-  --purple: #a78bfa;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
-.wrap { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
-
-/* header */
-.eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
-h1 { font-size: 1.9rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.4rem; }
-h1 span { color: var(--green); }
-.conn { display: flex; align-items: center; gap: 7px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 2rem; margin-top: 0.6rem; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hint); }
-.dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
-
-/* overview cards */
-.overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-.ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; }
-.ov-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 7px; }
-.ov-val { font-size: 1.5rem; font-weight: 700; }
-.ov-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--hint); margin-top: 4px; }
-.g { color: var(--green); } .r { color: var(--red); } .a { color: var(--amber); }
-
-/* unallocated banner */
-.unalloc {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-left: 3px solid var(--amber);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.unalloc-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 4px; }
-.unalloc-val { font-size: 1.6rem; font-weight: 700; color: var(--amber); }
-.unalloc-hint { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-align: right; max-width: 180px; line-height: 1.5; }
-
-/* solar */
-.solar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; }
-.solar-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.9rem; }
-.solar-title { font-size: 13px; font-weight: 600; }
-.solar-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
-.solar-pct { font-family: 'DM Mono', monospace; font-size: 1.8rem; font-weight: 500; color: var(--green); line-height: 1; }
-.track { background: var(--surface2); border-radius: 99px; height: 7px; overflow: hidden; margin-bottom: 8px; }
-.fill-g { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.6s cubic-bezier(.4,0,.2,1); }
-.solar-meta { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
-
-/* buckets */
-.buckets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.25rem; }
-.bucket { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; }
-.bkt-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-.bkt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.bkt-name { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
-.bkt-val { font-size: 1.25rem; font-weight: 700; }
-.bkt-cap { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--hint); margin-top: 3px; }
-.mini-track { background: var(--surface2); border-radius: 99px; height: 3px; overflow: hidden; margin-top: 7px; }
-.mini-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
-
-/* panels */
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; }
-.panel-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 1rem; }
-
-/* tabs */
-.tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
-.tab { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 7px 14px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
-.tab.active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 500; }
-
-/* forms */
-.fields { display: grid; gap: 8px; }
-.row2 { grid-template-columns: 1fr 1fr; }
-.row3 { grid-template-columns: 1fr 1fr 1fr; }
-input, select {
-  background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px;
-  color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px;
-  padding: 10px 12px; width: 100%; outline: none; transition: border-color 0.2s;
-}
-input:focus, select:focus { border-color: var(--green); }
-input::placeholder { color: var(--hint); }
-select option { background: var(--surface2); }
-.btn { border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 20px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn-green { background: var(--green); color: #000; }
-.btn-amber { background: var(--amber); color: #000; }
-.btn-full { width: 100%; margin-top: 4px; }
-
-/* history */
-.hist-list { display: flex; flex-direction: column; gap: 1px; max-height: 300px; overflow-y: auto; }
-.hist-list::-webkit-scrollbar { width: 3px; }
-.hist-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
-.entry { display: flex; justify-content: space-between; align-items: center; padding: 9px 10px; border-radius: 8px; }
-.entry:hover { background: var(--surface2); }
-.e-left { flex: 1; min-width: 0; }
-.e-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.e-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--hint); margin-top: 2px; }
-.e-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.e-amt { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
-.del { background: none; border: none; color: var(--hint); cursor: pointer; font-size: 16px; padding: 2px 4px; border-radius: 4px; line-height: 1; }
-.del:hover { color: var(--red); }
-.empty { text-align: center; padding: 2rem; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--hint); }
-
-/* toast */
-.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 18px; font-family: 'DM Mono', monospace; font-size: 12px; z-index: 100; transition: transform 0.3s ease; white-space: nowrap; }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.ok { border-color: var(--green); color: var(--green); }
-.toast.err { border-color: var(--red); color: var(--red); }
-
-@media(max-width:520px){
-  .overview { grid-template-columns: repeat(3,1fr); }
-  .row2,.row3 { grid-template-columns: 1fr; }
-  .ov-val { font-size: 1.1rem; }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tobi · Money Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
 <div class="wrap">
 
-  <div class="eyebrow">personal finance</div>
-  <h1>Tobi's <span>Money</span> Tracker</h1>
-  <div class="conn"><span class="dot" id="dot"></span><span id="conn-txt">connecting...</span></div>
+  <!-- ── header ── -->
+  <header class="header">
+    <div class="header-top">
+      <div>
+        <div class="greeting-eyebrow" id="greeting-text">Good evening,</div>
+        <div class="greeting-name">Tobi <span>David</span></div>
+        <div class="greeting-sub" id="motivation">Keep building, keep growing.</div>
+      </div>
+      <div class="header-right">
+        <div class="date-day" id="date-day">21</div>
+        <div class="date-display" id="date-info">Tuesday · May 2026</div>
+      </div>
+    </div>
+    <div class="conn-bar">
+      <span class="dot" id="dot"></span>
+      <span id="conn-txt">connecting...</span>
+    </div>
+  </header>
 
-  <!-- overview -->
-  <div class="overview">
+  <!-- ── month nav ── -->
+  <div class="month-bar">
+    <div class="month-nav">
+      <button class="month-btn" onclick="prevMonth()">‹</button>
+      <div class="month-label" id="month-label">May 2026 · now</div>
+      <button class="month-btn" onclick="nextMonth()">›</button>
+    </div>
+    <button class="month-today-btn" onclick="goToday()">this month</button>
+  </div>
+
+  <!-- ── overview ── -->
+  <div class="section-label">this month</div>
+  <div class="overview" style="margin-bottom:1.25rem;">
     <div class="ov-card">
-      <div class="ov-label">Total income</div>
-      <div class="ov-val g" id="v-inc">₦0</div>
-      <div class="ov-sub">all gigs logged</div>
+      <div class="ov-label">Income</div>
+      <div class="ov-val green" id="v-inc">₦0</div>
+      <div class="ov-sub">gigs logged</div>
     </div>
     <div class="ov-card">
       <div class="ov-label">Allocated</div>
       <div class="ov-val" id="v-alloc">₦0</div>
-      <div class="ov-sub">assigned to buckets</div>
+      <div class="ov-sub">to buckets</div>
     </div>
     <div class="ov-card">
       <div class="ov-label">Spent</div>
-      <div class="ov-val r" id="v-spent">₦0</div>
-      <div class="ov-sub">marked as used</div>
+      <div class="ov-val red" id="v-spent">₦0</div>
+      <div class="ov-sub">marked used</div>
     </div>
   </div>
 
-  <!-- unallocated -->
-  <div class="unalloc">
+  <!-- ── unallocated ── -->
+  <div class="unalloc-card">
     <div>
       <div class="unalloc-label">Unallocated cash</div>
       <div class="unalloc-val" id="v-unalloc">₦0</div>
     </div>
-    <div class="unalloc-hint">money in — not yet assigned to a bucket. allocate it below.</div>
+    <div class="unalloc-action">income in, not yet<br>assigned to a bucket.<br>allocate it below ↓</div>
   </div>
 
-  <!-- solar -->
-  <div class="solar-card">
-    <div class="solar-top">
-      <div>
-        <div class="solar-title">☀ Solar generator savings</div>
-        <div class="solar-sub">target ₦300,000 upfront (50%)</div>
+  <!-- ── goals ── -->
+  <div class="section-label">savings goals</div>
+  <div class="goals">
+
+    <!-- solar -->
+    <div class="goal-card">
+      <div class="goal-glow" style="background:radial-gradient(circle, rgba(31,204,138,0.08) 0%, transparent 70%)"></div>
+      <div class="goal-top">
+        <div class="goal-info">
+          <div class="goal-icon">☀</div>
+          <div class="goal-title">Solar generator</div>
+          <div class="goal-sub">target ₦300,000 · 50% upfront</div>
+        </div>
+        <div class="goal-pct" style="color:var(--green)" id="solar-pct">0%</div>
       </div>
-      <div class="solar-pct" id="v-solar-pct">0%</div>
+      <div class="track">
+        <div class="track-fill" id="solar-fill" style="width:0%;background:var(--green)"></div>
+      </div>
+      <div class="goal-meta">
+        <span id="solar-saved">₦0 saved</span>
+        <span id="solar-remain">₦300,000 to go</span>
+      </div>
+      <div class="goal-milestone" id="solar-milestone">start saving to begin</div>
     </div>
-    <div class="track"><div class="fill-g" id="solar-bar" style="width:0%"></div></div>
-    <div class="solar-meta">
-      <span id="v-solar-saved">₦0 saved</span>
-      <span id="v-solar-remain">₦300,000 to go</span>
+
+    <!-- iphone -->
+    <div class="goal-card">
+      <div class="goal-glow" style="background:radial-gradient(circle, rgba(74,158,255,0.08) 0%, transparent 70%)"></div>
+      <div class="goal-top">
+        <div class="goal-info">
+          <div class="goal-icon">📱</div>
+          <div class="goal-title">iPhone 11 Pro Max</div>
+          <div class="goal-sub">target ₦150,000 · content creation</div>
+        </div>
+        <div class="goal-pct" style="color:var(--blue)" id="iphone-pct">0%</div>
+      </div>
+      <div class="track">
+        <div class="track-fill" id="iphone-fill" style="width:0%;background:var(--blue)"></div>
+      </div>
+      <div class="goal-meta">
+        <span id="iphone-saved">₦0 saved</span>
+        <span id="iphone-remain">₦150,000 to go</span>
+      </div>
+      <div class="goal-milestone" id="iphone-milestone">start saving to begin</div>
     </div>
+
   </div>
 
-  <!-- buckets -->
+  <!-- ── buckets ── -->
+  <div class="section-label">monthly buckets</div>
   <div class="buckets">
+
     <div class="bucket">
-      <div class="bkt-top"><div class="bkt-dot" style="background:var(--red)"></div><div class="bkt-name">Family</div></div>
-      <div class="bkt-val r" id="b-family">₦0</div>
-      <div class="bkt-cap">cap ₦15,000/mo</div>
-      <div class="mini-track"><div class="mini-fill" id="bf-bar" style="width:0%;background:var(--red)"></div></div>
+      <div class="bkt-top">
+        <div class="bkt-dot" style="background:var(--red)"></div>
+        <div class="bkt-name">Family</div>
+      </div>
+      <div class="bkt-val" style="color:var(--red)" id="b-family">₦0</div>
+      <div class="bkt-cap">cap ₦15,000 / month</div>
+      <div class="mini-track">
+        <div class="mini-fill" id="fam-bar" style="width:0%;background:var(--red)"></div>
+      </div>
+      <div class="bkt-warn" id="fam-warn" style="display:none"></div>
     </div>
+
     <div class="bucket">
-      <div class="bkt-top"><div class="bkt-dot" style="background:var(--blue)"></div><div class="bkt-name">Water</div></div>
+      <div class="bkt-top">
+        <div class="bkt-dot" style="background:var(--blue)"></div>
+        <div class="bkt-name">Water</div>
+      </div>
       <div class="bkt-val" style="color:var(--blue)" id="b-water">₦0</div>
-      <div class="bkt-cap">~₦2,500/week</div>
+      <div class="bkt-cap">~₦2,500 / week</div>
     </div>
+
     <div class="bucket">
-      <div class="bkt-top"><div class="bkt-dot" style="background:var(--amber)"></div><div class="bkt-name">Data & food</div></div>
-      <div class="bkt-val a" id="b-data">₦0</div>
-      <div class="bkt-cap">budget ₦10,000/mo</div>
+      <div class="bkt-top">
+        <div class="bkt-dot" style="background:var(--amber)"></div>
+        <div class="bkt-name">Data & food</div>
+      </div>
+      <div class="bkt-val" style="color:var(--amber)" id="b-data">₦0</div>
+      <div class="bkt-cap">budget ₦10,000 / month</div>
     </div>
+
     <div class="bucket">
-      <div class="bkt-top"><div class="bkt-dot" style="background:var(--purple)"></div><div class="bkt-name">Workspace</div></div>
+      <div class="bkt-top">
+        <div class="bkt-dot" style="background:var(--purple)"></div>
+        <div class="bkt-name">Workspace</div>
+      </div>
       <div class="bkt-val" style="color:var(--purple)" id="b-work">₦0</div>
       <div class="bkt-cap">as income allows</div>
     </div>
+
   </div>
 
-  <!-- log panel -->
+  <!-- ── quick stats ── -->
+  <div class="section-label">at a glance</div>
+  <div class="quick-stats" style="margin-bottom:1.5rem;">
+    <div class="stat">
+      <div class="stat-val" id="stat-biggest">—</div>
+      <div class="stat-label">biggest gig</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-gig-count">0 gigs</div>
+      <div class="stat-label">this month</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-last">—</div>
+      <div class="stat-label">last income</div>
+    </div>
+  </div>
+
+  <!-- ── log panel ── -->
+  <div class="section-label">log transaction</div>
   <div class="panel">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('income', this)">Log income</div>
-      <div class="tab" onclick="switchTab('allocate', this)">Allocate</div>
-      <div class="tab" onclick="switchTab('spend', this)">Mark spent</div>
+      <button class="tab active" onclick="switchTab('income', this)">Log income</button>
+      <button class="tab" onclick="switchTab('allocate', this)">Allocate</button>
+      <button class="tab" onclick="switchTab('spend', this)">Mark spent</button>
     </div>
 
     <!-- income tab -->
     <div id="tab-income">
-      <div class="fields row2">
-        <input type="text" id="inc-desc" placeholder="Source e.g. Zeed payment" />
-        <input type="number" id="inc-amt" placeholder="Amount in ₦" min="1" />
+      <div class="fields row2" style="margin-bottom:8px;">
+        <div class="field-group">
+          <label class="field-label">Source</label>
+          <input type="text" id="inc-desc" placeholder="e.g. Zeed payment, Progrid" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Amount (₦)</label>
+          <input type="number" id="inc-amt" placeholder="e.g. 60000" min="1" />
+        </div>
       </div>
-      <button class="btn btn-green btn-full" id="inc-btn" onclick="logIncome()">+ Log income</button>
+      <button class="btn btn-green" id="inc-btn" onclick="logIncome()">+ Log income</button>
     </div>
 
     <!-- allocate tab -->
     <div id="tab-allocate" style="display:none">
-      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">
-        Unallocated: <strong id="alloc-avail" style="color:var(--amber)">₦0</strong> — split it across buckets below. Leave fields empty to skip.
-      </p>
-      <div class="fields row2" style="margin-bottom:8px">
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">☀ Solar savings</div>
+      <div class="alloc-hint">
+        <span>Unallocated: <strong id="alloc-avail">₦0</strong></span>
+        <span class="alloc-total-display">Allocating: <strong id="alloc-total">₦0</strong></span>
+      </div>
+      <div class="alloc-grid">
+        <div class="field-group">
+          <label class="field-label">☀ Solar savings</label>
           <input type="number" id="a-solar" placeholder="₦0" min="0" />
         </div>
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">Family</div>
+        <div class="field-group">
+          <label class="field-label">📱 iPhone savings</label>
+          <input type="number" id="a-iphone" placeholder="₦0" min="0" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Family</label>
           <input type="number" id="a-family" placeholder="₦0" min="0" />
         </div>
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">Water</div>
+        <div class="field-group">
+          <label class="field-label">Water</label>
           <input type="number" id="a-water" placeholder="₦0" min="0" />
         </div>
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">Data & food</div>
+        <div class="field-group">
+          <label class="field-label">Data & food</label>
           <input type="number" id="a-data" placeholder="₦0" min="0" />
         </div>
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">Workspace</div>
+        <div class="field-group">
+          <label class="field-label">Workspace</label>
           <input type="number" id="a-work" placeholder="₦0" min="0" />
         </div>
-        <div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;">Other</div>
+        <div class="field-group">
+          <label class="field-label">Other</label>
           <input type="number" id="a-other" placeholder="₦0" min="0" />
         </div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;">
-        Allocating: <strong id="alloc-total" style="color:var(--text)">₦0</strong>
-      </div>
-      <button class="btn btn-amber btn-full" id="alloc-btn" onclick="allocate()">Allocate →</button>
+      <button class="btn btn-amber" id="alloc-btn" onclick="allocate()">Allocate →</button>
     </div>
 
     <!-- spend tab -->
     <div id="tab-spend" style="display:none">
-      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:12px;">Mark money as actually spent from a bucket.</p>
-      <div class="fields row3" style="margin-bottom:8px">
-        <input type="text" id="sp-desc" placeholder="What for?" />
-        <input type="number" id="sp-amt" placeholder="₦ amount" min="1" />
-        <select id="sp-bucket">
-          <option value="solar">Solar savings</option>
-          <option value="family">Family</option>
-          <option value="water">Water</option>
-          <option value="data">Data & food</option>
-          <option value="workspace">Workspace</option>
-          <option value="other">Other</option>
-        </select>
+      <div class="fields row3" style="margin-bottom:8px;">
+        <div class="field-group">
+          <label class="field-label">What for?</label>
+          <input type="text" id="sp-desc" placeholder="e.g. Bedsheet" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Amount (₦)</label>
+          <input type="number" id="sp-amt" placeholder="e.g. 15000" min="1" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">From bucket</label>
+          <select id="sp-bucket">
+            <option value="solar">Solar savings</option>
+            <option value="iphone">iPhone savings</option>
+            <option value="family">Family</option>
+            <option value="water">Water</option>
+            <option value="data">Data & food</option>
+            <option value="workspace">Workspace</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
       </div>
-      <button class="btn btn-full" style="background:var(--red);color:#fff;" id="sp-btn" onclick="markSpent()">Mark as spent</button>
+      <button class="btn btn-red" id="sp-btn" onclick="markSpent()">Mark as spent</button>
     </div>
   </div>
 
-  <!-- history -->
+  <!-- ── history ── -->
+  <div class="section-label">history</div>
   <div class="panel">
-    <div class="panel-title">Transaction history</div>
-    <div class="hist-list" id="history"><div class="empty">loading...</div></div>
+    <div class="history-controls">
+      <div class="panel-title" style="margin-bottom:0">Transactions</div>
+      <div class="hist-filter">
+        <button class="filter-btn active" onclick="setHistFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setHistFilter('income', this)">Income</button>
+        <button class="filter-btn" onclick="setHistFilter('alloc', this)">Allocated</button>
+        <button class="filter-btn" onclick="setHistFilter('spent', this)">Spent</button>
+      </div>
+    </div>
+    <div class="hist-list" id="history">
+      <div class="empty-state">loading your transactions...</div>
+    </div>
   </div>
 
 </div>
+
 <div class="toast" id="toast"></div>
 
-<script>
-const URL  = 'https://hhwveowhqgkczpneiblo.supabase.co';
-const KEY  = 'sb_publishable_qeDbZkl_hpNtVyw-SSkFuA_HbtKlNtP';
-const TBL  = 'transactions';
-const SOLAR_TARGET = 300000;
-const FAM_CAP = 15000;
-
-const H = {
-  'Content-Type': 'application/json',
-  'apikey': KEY,
-  'Authorization': `Bearer ${KEY}`,
-  'Prefer': 'return=representation'
-};
-
-let entries = [];
-
-async function load() {
-  try {
-    const r = await fetch(`${URL}/rest/v1/${TBL}?order=created_at.desc`, { headers: H });
-    if (!r.ok) throw 0;
-    entries = await r.json();
-    setConn(true); render();
-  } catch { setConn(false); document.getElementById('history').innerHTML = '<div class="empty">could not connect</div>'; }
-}
-
-async function post(body) {
-  const r = await fetch(`${URL}/rest/v1/${TBL}`, { method: 'POST', headers: H, body: JSON.stringify(body) });
-  if (!r.ok) throw 0;
-}
-
-async function del(id) {
-  await fetch(`${URL}/rest/v1/${TBL}?id=eq.${id}`, { method: 'DELETE', headers: H });
-}
-
-// ---- actions ----
-
-async function logIncome() {
-  const desc = v('inc-desc'), amt = num('inc-amt');
-  if (!desc || !amt) return toast('Fill description and amount', 'err');
-  disable('inc-btn');
-  try {
-    await post({ description: desc, amount: amt, type: 'income' });
-    clear('inc-desc','inc-amt'); toast('Income logged ✓', 'ok'); load();
-  } catch { toast('Failed — try again', 'err'); }
-  enable('inc-btn');
-}
-
-async function allocate() {
-  const fields = ['solar','family','water','data','work','other'];
-  const vals = fields.map(f => ({ f, a: num('a-'+f) })).filter(x => x.a > 0);
-  if (!vals.length) return toast('Enter at least one amount', 'err');
-
-  const total = vals.reduce((s,x) => s+x.a, 0);
-  const unalloc = getUnallocated();
-  if (total > unalloc + 0.01) return toast(`Only ₦${fmt(unalloc)} unallocated`, 'err');
-
-  disable('alloc-btn');
-  try {
-    for (const { f, a } of vals) {
-      await post({ description: `Allocated to ${labelOf(f)}`, amount: a, type: 'alloc_' + f });
-    }
-    fields.forEach(f => clear('a-'+f));
-    toast('Allocated ✓', 'ok'); load();
-  } catch { toast('Failed — try again', 'err'); }
-  enable('alloc-btn');
-}
-
-async function markSpent() {
-  const desc = v('sp-desc'), amt = num('sp-amt'), bucket = v('sp-bucket');
-  if (!desc || !amt) return toast('Fill description and amount', 'err');
-  disable('sp-btn');
-  try {
-    await post({ description: desc, amount: amt, type: 'spent_' + bucket });
-    clear('sp-desc','sp-amt'); toast('Marked as spent ✓', 'ok'); load();
-  } catch { toast('Failed — try again', 'err'); }
-  enable('sp-btn');
-}
-
-async function deleteEntry(id) {
-  try { await del(id); toast('Deleted', ''); load(); }
-  catch { toast('Delete failed', 'err'); }
-}
-
-// ---- render ----
-
-function getUnallocated() {
-  let income = 0, allocated = 0;
-  entries.forEach(e => {
-    if (e.type === 'income') income += +e.amount;
-    else if (e.type.startsWith('alloc_')) allocated += +e.amount;
-  });
-  return Math.max(0, income - allocated);
-}
-
-function render() {
-  let income = 0, allocated = 0, spent = 0;
-  let solar = 0, family = 0, water = 0, data = 0, work = 0;
-
-  entries.forEach(e => {
-    const a = +e.amount;
-    if (e.type === 'income') { income += a; return; }
-    if (e.type.startsWith('alloc_')) {
-      allocated += a;
-      const b = e.type.replace('alloc_', '');
-      if (b === 'solar') solar += a;
-      else if (b === 'family') family += a;
-      else if (b === 'water') water += a;
-      else if (b === 'data') data += a;
-      else if (b === 'work') work += a;
-      return;
-    }
-    if (e.type.startsWith('spent_')) { spent += a; }
-  });
-
-  const unalloc = Math.max(0, income - allocated);
-
-  set('v-inc', fmt(income));
-  set('v-alloc', fmt(allocated));
-  set('v-spent', fmt(spent));
-  set('v-unalloc', fmt(unalloc));
-  set('alloc-avail', fmt(unalloc));
-
-  const sp = Math.min(100, Math.round((solar / SOLAR_TARGET) * 100));
-  set('v-solar-pct', sp + '%');
-  set('solar-bar', null, 'width', sp + '%');
-  set('v-solar-saved', fmt(solar) + ' saved');
-  set('v-solar-remain', fmt(Math.max(0, SOLAR_TARGET - solar)) + ' to go');
-
-  set('b-family', fmt(family));
-  set('b-water', fmt(water));
-  set('b-data', fmt(data));
-  set('b-work', fmt(work));
-  const fp = Math.min(100, Math.round((family / FAM_CAP) * 100));
-  set('bf-bar', null, 'width', fp + '%');
-
-  // history
-  const hist = document.getElementById('history');
-  if (!entries.length) { hist.innerHTML = '<div class="empty">no transactions yet</div>'; return; }
-  hist.innerHTML = entries.map(e => {
-    const isIncome = e.type === 'income';
-    const isAlloc = e.type.startsWith('alloc_');
-    const color = isIncome ? 'var(--green)' : isAlloc ? 'var(--amber)' : 'var(--red)';
-    const sign = isIncome ? '+' : isAlloc ? '→' : '−';
-    return `<div class="entry">
-      <div class="e-left">
-        <div class="e-name">${e.description}</div>
-        <div class="e-meta">${humanType(e.type)} · ${fmtDate(e.created_at)}</div>
-      </div>
-      <div class="e-right">
-        <span class="e-amt" style="color:${color}">${sign}${fmt(e.amount)}</span>
-        <button class="del" onclick="deleteEntry('${e.id}')" aria-label="delete">×</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  // live update allocation total
-  updateAllocTotal();
-}
-
-function updateAllocTotal() {
-  const fields = ['solar','family','water','data','work','other'];
-  const total = fields.reduce((s,f) => s + (num('a-'+f)||0), 0);
-  const el = document.getElementById('alloc-total');
-  if (el) el.textContent = fmt(total);
-}
-
-['a-solar','a-family','a-water','a-data','a-work','a-other'].forEach(id => {
-  setTimeout(() => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateAllocTotal);
-  }, 100);
-});
-
-// ---- tabs ----
-function switchTab(name, el) {
-  ['income','allocate','spend'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  if (name === 'allocate') set('alloc-avail', fmt(getUnallocated()));
-}
-
-// ---- utils ----
-function v(id) { return document.getElementById(id)?.value.trim() || ''; }
-function num(id) { const n = parseFloat(document.getElementById(id)?.value); return isNaN(n)||n<=0?0:n; }
-function set(id, text, prop, val) { const el = document.getElementById(id); if (!el) return; if (text !== null && text !== undefined) el.textContent = text; if (prop) el.style[prop] = val; }
-function clear(...ids) { ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }
-function disable(id) { const el = document.getElementById(id); if (el) { el.disabled = true; el.textContent = '...'; } }
-function enable(id) { const el = document.getElementById(id); if (el) { el.disabled = false; el.textContent = el.id === 'inc-btn' ? '+ Log income' : el.id === 'alloc-btn' ? 'Allocate →' : 'Mark as spent'; } }
-function fmt(n) { return '₦' + Math.round(n).toLocaleString('en-NG'); }
-function fmtDate(d) { return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' }); }
-function labelOf(k) { return {solar:'Solar savings',family:'Family',water:'Water',data:'Data & food',work:'Workspace',other:'Other'}[k]||k; }
-function humanType(t) {
-  if (t === 'income') return 'Income';
-  if (t.startsWith('alloc_')) return 'Allocated → ' + labelOf(t.replace('alloc_',''));
-  if (t.startsWith('spent_')) return 'Spent from ' + labelOf(t.replace('spent_',''));
-  return t;
-}
-function setConn(ok) {
-  document.getElementById('dot').className = 'dot' + (ok ? ' live' : '');
-  document.getElementById('conn-txt').textContent = ok ? 'connected to supabase' : 'offline';
-}
-
-let toastTimer;
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show' + (type ? ' '+type : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = 'toast'; }, 2600);
-}
-
-load();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
